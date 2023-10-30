@@ -53,27 +53,31 @@ export async function getGuestRequestHeaders(): Promise<Headers & TwitterGuestHe
 	return new Headers(guestRequestHeaders) as Headers & TwitterGuestHeaders;
 }
 
-export async function getUserTweets(userId: string, authToken: string, csrf: string) {
+export async function getUserTweets(userId: string, authToken: string, csrf: string, cursor: string | undefined) {
 	const baseUrl = 'https://twitter.com/i/api/graphql/QvCV3AU7X1ZXr9JSrH9EOA/UserTweets';
 
 	// We don't get all tweets with await getGuestRequestHeaders();
 	const headers = await getAuthenticatedHeader(authToken, csrf);
+
+	const variables = {
+		userId,
+		count: 20,
+		withTweetQuoteCount: false,
+		includePromotedContent: false,
+		withQuickPromoteEligibilityTweetFields: false,
+		withSuperFollowsUserFields: false,
+		withBirdwatchPivots: false,
+		withDownvotePerspective: false,
+		withReactionsMetadata: false,
+		withReactionsPerspective: false,
+		withSuperFollowsTweetFields: false,
+		withVoice: false,
+		withV2Timeline: false,
+	};
+	if (cursor) variables['cursor'] = cursor;
+
 	const params = new URLSearchParams({
-		variables: JSON.stringify({
-			userId,
-			count: 20,
-			withTweetQuoteCount: false,
-			includePromotedContent: false,
-			withQuickPromoteEligibilityTweetFields: false,
-			withSuperFollowsUserFields: false,
-			withBirdwatchPivots: false,
-			withDownvotePerspective: false,
-			withReactionsMetadata: false,
-			withReactionsPerspective: false,
-			withSuperFollowsTweetFields: false,
-			withVoice: false,
-			withV2Timeline: false,
-		}),
+		variables: JSON.stringify(variables),
 	});
 
 	const response = await fetch(`${baseUrl}?${params.toString()}`, {
@@ -84,27 +88,38 @@ export async function getUserTweets(userId: string, authToken: string, csrf: str
 	return await response.json();
 }
 
-export async function getUserSpaceIds(userId: string, authToken: string, csrf: string): Promise<string[]> {
-	const data = await getUserTweets(userId, authToken, csrf);
+export async function getUserSpaceIds(userId: string, authToken: string, csrf: string, count: number): Promise<string[]> {
+	let cursor;
+	let spaceIds = [];
 
-	// @ts-ignore
-	const instructions = data?.data?.user?.result?.timeline?.timeline?.instructions || [];
+	do {
+		const data = await getUserTweets(userId, authToken, csrf, cursor);
 
-	const instruction = instructions.find((v) => v?.type === 'TimelineAddEntries');
-	const tweets: any[] =
-		instruction?.entries
-			?.filter((v) => v?.content?.entryType === 'TimelineTimelineItem')
-			?.map((v) => v?.content?.itemContent?.tweet_results?.result)
-			?.filter((v) => v?.card) || [];
-
-	const spaceIds: string[] = [
 		// @ts-ignore
-		...new Set(
-			tweets.map((tweet) => tweet?.card?.legacy?.binding_values?.find?.((v) => v?.key === 'id')?.value?.string_value).filter((v) => v),
-		),
-	];
+		const instructions = data?.data?.user?.result?.timeline?.timeline?.instructions || [];
 
-	return spaceIds;
+		const instruction = instructions.find((v) => v?.type === 'TimelineAddEntries');
+		const tweets: any[] =
+			instruction?.entries
+				?.filter((v) => v?.content?.entryType === 'TimelineTimelineItem')
+				?.map((v) => v?.content?.itemContent?.tweet_results?.result)
+				?.filter((v) => v?.card) || [];
+
+		const requestedSpaceIds: string[] = [
+			// @ts-ignore
+			...new Set(
+				tweets.map((tweet) => tweet?.card?.legacy?.binding_values?.find?.((v) => v?.key === 'id')?.value?.string_value).filter((v) => v),
+			),
+		];
+		spaceIds.push(...requestedSpaceIds);
+
+		const cursors: any[] = instruction?.entries
+			?.filter((v) => v?.content?.entryType === 'TimelineTimelineCursor' && v?.content?.cursorType === 'Bottom')
+			?.map((v) => v?.content?.value);
+		cursor = cursors[0];
+	} while (cursor && spaceIds.length < count);
+
+	return spaceIds.length > count ? spaceIds.slice(0, count) : spaceIds;
 }
 
 export async function getSpace(spaceId: string, authToken: string, csrf: string) {
@@ -399,12 +414,13 @@ export async function getMedia(mediaKey: string, authToken: string, csrf: string
 	return data;
 }
 
-export async function getUserSpaceInfos(userId: string, authToken: string, csrf: string) {
-	const spaceIds: string[] = await getUserSpaceIds(userId, authToken, csrf);
+export async function getUserSpaceInfos(userId: string, authToken: string, csrf: string, count: number) {
+	const spaceIds: string[] = await getUserSpaceIds(userId, authToken, csrf, count);
 
 	const userSpaceInfos = await Promise.all(
 		spaceIds.map(async (spaceId) => {
 			const spaceInfos = await getSpace(spaceId, authToken, csrf);
+
 			const {
 				rest_id,
 				state,
@@ -424,7 +440,7 @@ export async function getUserSpaceInfos(userId: string, authToken: string, csrf:
 			const creator = creator_results?.result?.legacy?.name;
 
 			let playlist;
-			if (media_key) {
+			if (media_key && is_space_available_for_replay) {
 				const mediaInfos = await getMedia(media_key, authToken, csrf);
 				// @ts-ignore
 				playlist = mediaInfos?.source?.location;

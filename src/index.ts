@@ -12,6 +12,9 @@ app.use('*', poweredBy());
 type SpacesUserIdParams = {
 	userId: string;
 };
+type SpacesUserIdQuery = {
+	count: number;
+};
 
 /**
  * @openapi
@@ -27,6 +30,11 @@ type SpacesUserIdParams = {
  * 			description: User ID, 1511552753444741120 for RadioChadFr
  * 		 	required: true
  * 			type: string
+ * 		- name: count
+ * 			in: query
+ * 			description: Maximum number of elements to return (sorted by decreasing creation date), default = 10
+ * 		 	required: false
+ * 			type: string
  *    responses:
  *    	'200':
  *         description: Successful operation. Returns JSON with space ids
@@ -37,10 +45,16 @@ app.get('/spaces/:userId', async (c) => {
 	try {
 		const { env, req } = c;
 
+		const query: SpacesUserIdQuery = Number.isNaN(Number(req.query().count)) ? { count: Number(10) } : { count: Number(req.query().count) };
 		const { userId } = req.param() as SpacesUserIdParams;
 
-		const data = await getUserSpaceInfos(userId, env.AUTH_TOKEN, env.CSRF);
-		return c.json({ data, success: true });
+		const data = await getUserSpaceInfos(userId, env.AUTH_TOKEN, env.CSRF, query.count);
+
+		return c.json({
+			count: data?.length,
+			data,
+			success: true,
+		});
 	} catch (e: any) {
 		c.status(400);
 		return c.json({ error: e.message });
