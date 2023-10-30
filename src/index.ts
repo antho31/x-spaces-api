@@ -1,9 +1,11 @@
 import { Hono } from 'hono';
 import { poweredBy } from 'hono/powered-by';
 
-import { getUserSpaceIds } from './utils/twitter';
+import { Bindings } from './types';
 
-const app = new Hono();
+import { getUserSpaceInfos } from './utils/twitter';
+
+const app = new Hono<{ Bindings }>();
 
 app.use('*', poweredBy());
 
@@ -37,8 +39,8 @@ app.get('/spaces/:userId', async (c) => {
 
 		const { userId } = req.param() as SpacesUserIdParams;
 
-		const spacesIds: string[] = await getUserSpaceIds(userId);
-		return c.json({ spacesIds, uccess: true });
+		const data = await getUserSpaceInfos(userId, env.AUTH_TOKEN, env.CSRF);
+		return c.json({ data, success: true });
 	} catch (e: any) {
 		c.status(400);
 		return c.json({ error: e.message });
