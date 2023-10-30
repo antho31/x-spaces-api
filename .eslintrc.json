@@ -1,0 +1,19 @@
+{
+	"env": {
+		"es2022": true,
+		"jest/globals": true,
+		"mocha": true,
+		"node": true,
+		"serviceworker": true
+	},
+	"extends": ["eslint:recommended", "prettier"],
+	"parserOptions": {
+		"sourceType": "module"
+	},
+	"plugins": ["prettier", "jest"],
+	"rules": {
+		"no-unused-vars": "warn",
+		"no-undef": "error",
+		"no-console": "off"
+	}
+}

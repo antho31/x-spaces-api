@@ -1,0 +1,28 @@
+{
+  "name": "x-spaces-api",
+  "private": true,
+  "version": "0.0.1",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "jest --verbose",
+    "dev": "wrangler dev src/index.ts",
+    "deploy": "wrangler publish src/index.ts"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "hono": "^2.5.7"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20221111.1",
+    "@types/jest": "^29.2.3",
+    "esbuild": "^0.15.15",
+    "esbuild-jest": "^0.5.0",
+    "eslint": "^8.52.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "jest": "^29.3.1",
+    "jest-environment-miniflare": "^2.11.0",
+    "prettier": "^3.0.3",
+    "wrangler": "^2.4.4"
+  }
+}
