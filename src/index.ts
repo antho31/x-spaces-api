@@ -3,7 +3,7 @@ import { poweredBy } from 'hono/powered-by';
 
 import { Bindings } from './types';
 
-import { getUserSpaceInfos } from './utils/twitter';
+import { getUserSpaceInfos, UserSpaceInfosResponse } from './utils/twitter';
 
 const app = new Hono<{ Bindings }>();
 
@@ -43,7 +43,7 @@ type SpacesUserIdQuery = {
  * 			type: string
  *    responses:
  *    	'200':
- *         description: Successful operation. Returns JSON with space ids
+ *         description: Successful operation. Returns JSON with success, count, cursor and data (space infos array)
  *      '400':
  *         description: Bad Request. Indicates missing or invalid parameters.
  */
@@ -56,7 +56,7 @@ app.get('/spaces/:userId', async (c) => {
 			: { count: Number(req.query().count), cursor: req.query().cursor };
 		const { userId } = req.param() as SpacesUserIdParams;
 
-		const { data, cursor } = await getUserSpaceInfos(userId, env.AUTH_TOKEN, env.CSRF, query.count, query.cursor);
+		const { data, cursor }: UserSpaceInfosResponse = await getUserSpaceInfos(userId, env.AUTH_TOKEN, env.CSRF, query.count, query.cursor);
 
 		return c.json({
 			success: true,

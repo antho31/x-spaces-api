@@ -14,6 +14,28 @@ export type SpaceIdsResponse = {
 	cursor: string | undefined;
 };
 
+export type UserSpaceInfosDataResponse = {
+	space_id: string;
+	embed: string;
+	creator: string;
+	title: string;
+	state: string;
+	media_key: string;
+	playlist: string | undefined;
+	created_at: number;
+	scheduled_start: number;
+	started_at: number;
+	ended_at: number;
+	is_space_available_for_replay: boolean;
+	total_replay_watched: number;
+	total_live_listeners;
+};
+
+export type UserSpaceInfosResponse = {
+	data: UserSpaceInfosDataResponse[];
+	cursor: string | undefined;
+};
+
 export const TWITTER_PUBLIC_AUTHORIZATION: string =
 	'Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs=1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA';
 
@@ -424,11 +446,17 @@ export async function getMedia(mediaKey: string, authToken: string, csrf: string
 	return data;
 }
 
-export async function getUserSpaceInfos(userId: string, authToken: string, csrf: string, count: number, reqCursor: string | undefined) {
+export async function getUserSpaceInfos(
+	userId: string,
+	authToken: string,
+	csrf: string,
+	count: number,
+	reqCursor: string | undefined,
+): Promise<UserSpaceInfosResponse> {
 	const { spaceIds, cursor }: SpaceIdsResponse = await getUserSpaceIds(userId, authToken, csrf, count, reqCursor);
 
-	const userSpaceInfos = await Promise.all(
-		spaceIds.map(async (spaceId) => {
+	const userSpaceInfos: UserSpaceInfosDataResponse[] = await Promise.all(
+		spaceIds.map(async (spaceId): Promise<UserSpaceInfosDataResponse> => {
 			const spaceInfos = await getSpace(spaceId, authToken, csrf);
 
 			const {
