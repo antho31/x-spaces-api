@@ -32,7 +32,6 @@ export type UserSpaceInfosDataResponse = {
 };
 
 export type UserSpaceInfosResponse = {
-	count: number;
 	data: UserSpaceInfosDataResponse[];
 	cursor: string | undefined;
 };
@@ -120,39 +119,36 @@ export async function getUserSpaceIds(
 	userId: string,
 	authToken: string,
 	csrf: string,
-	count: number,
 	cursor: string | undefined,
 ): Promise<SpaceIdsResponse> {
 	let spaceIds: string[] = [];
 
-	do {
-		const data = await getUserTweets(userId, authToken, csrf, cursor);
+	const data = await getUserTweets(userId, authToken, csrf, cursor);
 
+	// @ts-ignore
+	const instructions = data?.data?.user?.result?.timeline?.timeline?.instructions || [];
+
+	const instruction = instructions.find((v) => v?.type === 'TimelineAddEntries');
+	const tweets: any[] =
+		instruction?.entries
+			?.filter((v) => v?.content?.entryType === 'TimelineTimelineItem')
+			?.map((v) => v?.content?.itemContent?.tweet_results?.result)
+			?.filter((v) => v?.card) || [];
+
+	const requestedSpaceIds: string[] = [
 		// @ts-ignore
-		const instructions = data?.data?.user?.result?.timeline?.timeline?.instructions || [];
+		...new Set(
+			tweets.map((tweet) => tweet?.card?.legacy?.binding_values?.find?.((v) => v?.key === 'id')?.value?.string_value).filter((v) => v),
+		),
+	];
+	spaceIds.push(...requestedSpaceIds);
 
-		const instruction = instructions.find((v) => v?.type === 'TimelineAddEntries');
-		const tweets: any[] =
-			instruction?.entries
-				?.filter((v) => v?.content?.entryType === 'TimelineTimelineItem')
-				?.map((v) => v?.content?.itemContent?.tweet_results?.result)
-				?.filter((v) => v?.card) || [];
+	const cursors: any[] = instruction?.entries
+		?.filter((v) => v?.content?.entryType === 'TimelineTimelineCursor' && v?.content?.cursorType === 'Bottom')
+		?.map((v) => v?.content?.value);
+	cursor = cursors?.length ? cursors[0] : undefined;
 
-		const requestedSpaceIds: string[] = [
-			// @ts-ignore
-			...new Set(
-				tweets.map((tweet) => tweet?.card?.legacy?.binding_values?.find?.((v) => v?.key === 'id')?.value?.string_value).filter((v) => v),
-			),
-		];
-		spaceIds.push(...requestedSpaceIds);
-
-		const cursors: any[] = instruction?.entries
-			?.filter((v) => v?.content?.entryType === 'TimelineTimelineCursor' && v?.content?.cursorType === 'Bottom')
-			?.map((v) => v?.content?.value);
-		cursor = cursors?.length ? cursors[0] : undefined;
-	} while (cursor && spaceIds.length < count);
-
-	return { cursor, spaceIds: spaceIds.length > count ? spaceIds.slice(0, count) : spaceIds };
+	return { cursor, spaceIds };
 }
 
 export async function getSpace(spaceId: string, authToken: string, csrf: string) {
@@ -451,10 +447,9 @@ export async function getUserSpaceInfos(
 	userId: string,
 	authToken: string,
 	csrf: string,
-	count: number,
 	reqCursor: string | undefined,
 ): Promise<UserSpaceInfosResponse> {
-	const { spaceIds, cursor }: SpaceIdsResponse = await getUserSpaceIds(userId, authToken, csrf, count, reqCursor);
+	const { spaceIds, cursor }: SpaceIdsResponse = await getUserSpaceIds(userId, authToken, csrf, reqCursor);
 
 	const userSpaceInfos: UserSpaceInfosDataResponse[] = await Promise.all(
 		spaceIds.map(async (spaceId): Promise<UserSpaceInfosDataResponse> => {
@@ -505,7 +500,6 @@ export async function getUserSpaceInfos(
 	);
 
 	return {
-		count: userSpaceInfos.length,
 		data: userSpaceInfos,
 		cursor,
 	};

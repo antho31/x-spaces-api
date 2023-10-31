@@ -13,7 +13,6 @@ type SpacesUserIdParams = {
 	userId: string;
 };
 type SpacesUserIdQuery = {
-	count: number;
 	cursor: string | undefined;
 };
 
@@ -31,11 +30,6 @@ type SpacesUserIdQuery = {
  *         description: The unique ID of the user (e.g., 1511552753444741120 for RadioChadFr).
  *         required: true
  *         type: string
- *       - name: count
- *         in: query
- *         description: Specifies the maximum number of results to return, sorted by descending creation date. Default value is 10.
- *         required: false
- *         type: string
  *       - name: cursor
  *         in: query
  *         description: Provides the cursor from the last query, allowing for the retrieval of subsequent data.
@@ -51,12 +45,10 @@ app.get('/spaces/:userId', async (c) => {
 	try {
 		const { env, req } = c;
 
-		const query: SpacesUserIdQuery = Number.isNaN(Number(req.query().count))
-			? { count: Number(10), cursor: req.query().cursor }
-			: { count: Number(req.query().count), cursor: req.query().cursor };
+		const query: SpacesUserIdQuery = { cursor: req.query().cursor };
 		const { userId } = req.param() as SpacesUserIdParams;
 
-		const response: UserSpaceInfosResponse = await getUserSpaceInfos(userId, env.AUTH_TOKEN, env.CSRF, query.count, query.cursor);
+		const response: UserSpaceInfosResponse = await getUserSpaceInfos(userId, env.AUTH_TOKEN, env.CSRF, query.cursor);
 
 		return c.json(response);
 	} catch (e: any) {

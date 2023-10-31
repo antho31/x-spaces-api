@@ -27,7 +27,6 @@ describe('Test /spaces/:userId route', () => {
 		expect(typeof firstSpaceInfo.total_live_listeners).toBe('number');
 
 		expect(typeof parsedBody.cursor).toBe('string');
-		expect(parsedBody.count).toBe(10);
 	});
 
 	it('Should return empty data array for invalid user ID', async () => {
@@ -39,25 +38,18 @@ describe('Test /spaces/:userId route', () => {
 		expect(parsedBody.data).toHaveLength(0);
 	});
 
-	it('Should return limited spaces information based on the count', async () => {
-		const res = await fetch('http://localhost:8787/spaces/1511552753444741120?count=5');
-		const parsedBody: UserSpaceInfosResponse = await res.json();
-
-		expect(res.status).toBe(200);
-		expect(parsedBody.data).toHaveLength(5);
-	});
-
 	it('Should fetch next data using the cursor', async () => {
-		const fetch4ItemsRes = await fetch('http://localhost:8787/spaces/1511552753444741120?count=10');
-		const fetch4ItemsBody: UserSpaceInfosResponse = await fetch4ItemsRes.json();
+		const res1 = await fetch('http://localhost:8787/spaces/1511552753444741120');
+		const body1: UserSpaceInfosResponse = await res1.json();
+		const cursor = body1.cursor;
 
-		const fetch2ItemsRes = await fetch('http://localhost:8787/spaces/1511552753444741120?count=2');
-		const fetch2ItemsBody: UserSpaceInfosResponse = await fetch2ItemsRes.json();
-		const cursor = fetch2ItemsBody.cursor;
+		const res2 = await fetch(`http://localhost:8787/spaces/1511552753444741120?cursor=${cursor}`);
+		const body2: UserSpaceInfosResponse = await res2.json();
 
-		const fetch2MoreItemsRes = await fetch(`http://localhost:8787/spaces/1511552753444741120?count=2&cursor=${cursor}`);
-		const fetch2MoreItemsBody: UserSpaceInfosResponse = await fetch2MoreItemsRes.json();
+		const res3 = await fetch(`http://localhost:8787/spaces/1511552753444741120?cursor=${cursor}`);
+		const body3: UserSpaceInfosResponse = await res3.json();
 
-		expect(fetch2MoreItemsBody.data[1]['space_id']).toBe(fetch4ItemsBody.data[3]['space_id']);
+		expect(body3.data[0]['space_id'] === body2.data[0]['space_id']).toBe(true);
+		expect(body3.data[0]['space_id'] === body1.data[0]['space_id']).toBe(false);
 	});
 });

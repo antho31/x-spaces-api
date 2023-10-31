@@ -7,7 +7,7 @@ Retrieve Spaces information for users on X (formerly known as Twitter).
 ## Features
 
 - Retrieve information like space id, title, media key, playlist URL (.m3u8), and more from any X creator id.
-- Supports pagination through count & cursor parameters.
+- Supports pagination through cursor parameter.
 - Utilizes internal GraphQL API – no paid developer account required.
 - Built using TypeScript and deployed with Wrangler.
 
@@ -18,49 +18,47 @@ Retrieve Spaces information for users on X (formerly known as Twitter).
 Use `creator_id` = `1511552753444741120`
 
 ```shell
-# The cursor & count query parameters are optional.
+# The cursor query parameter is optional.
 curl --request GET \
-  --url 'https://[deployment_url]/spaces/1511552753444741120?cursor=DAABCgABF9wpS1-__9QKAAIX0ePcB1dwwggAAwAAAAIAAA&count=2' 
+  --url 'https://[deployment_url]/spaces/1511552753444741120?cursor=DAABCgABF9wpS1-__9QKAAIX0ePcB1dwwggAAwAAAAIAAA' 
 ```
 
 ```JSON
 {
- "success": true,
- "count": 2,
- "data": [
-  {
-   "space_id": "1YpJkwXXDrjJj",
-   "embed": "https://twitter.com/i/spaces/1YpJkwXXDrjJj",
-   "creator": "Radio Chad",
-   "title": "QU'EST-CE QUE LE LIBERTARIANISME ?",
-   "state": "Ended",
-   "media_key": "28_1713278501330231296",
-   "playlist": "https://prod-fastly-eu-west-3.video.pscp.tv/Transcoding/v1/hls/LMNE3Jc9cDGtHFBHUDxGGMzy69b1RYZGKNq2k2t1zt5XhCc94U4WBbmC69JmhhRe-O3_51c6hjqUNIcEBK5VnQ/non_transcode/eu-west-3/periscope-replay-direct-prod-eu-west-3-public/audio-space/playlist_16748733499282531558.m3u8?type=replay",
-   "created_at": 1697312400536,
-   "scheduled_start": 1698004847505,
-   "started_at": 1698004806977,
-   "ended_at": "1698010574755",
-   "is_space_available_for_replay": true,
-   "total_replay_watched": 92,
-   "total_live_listeners": 90
-  },
-  {
-   "space_id": "1YqxoDYWrVMKv",
-   "embed": "https://twitter.com/i/spaces/1YqxoDYWrVMKv",
-   "creator": "Radio Chad",
-   "title": "JEUX VIDEO, BLOCKCHAIN ET TWITTER DE MERDE",
-   "state": "Ended",
-   "media_key": "28_1715463023849246720",
-   "playlist": "https://prod-fastly-eu-west-3.video.pscp.tv/Transcoding/v1/hls/eXBGros1_pCwuUGqj3naP46crSlLAgHADhIBece0PzXGuXdr0PdwypOT80K59UCxsEZXuRjXJC4tTocOjSMBrQ/non_transcode/eu-west-3/periscope-replay-direct-prod-eu-west-3-public/audio-space/playlist_16748906662865588420.m3u8?type=replay",
-   "created_at": 1697833231287,
-   "started_at": 1697833233210,
-   "ended_at": "1697837404207",
-   "is_space_available_for_replay": true,
-   "total_replay_watched": 36,
-   "total_live_listeners": 43
-  }
- ],
- "cursor": "DAABCgABF9wpS1-__78KAAIXy_S8oVag3wgAAwAAAAIAAA"
+   "data":[
+      {
+         "space_id":"1YpJkwXXDrjJj",
+         "embed":"https://twitter.com/i/spaces/1YpJkwXXDrjJj",
+         "creator":"Radio Chad",
+         "title":"QU'EST-CE QUE LE LIBERTARIANISME ?",
+         "state":"Ended",
+         "media_key":"28_1713278501330231296",
+         "playlist":"https://prod-fastly-eu-west-3.video.pscp.tv/Transcoding/v1/hls/LMNE3Jc9cDGtHFBHUDxGGMzy69b1RYZGKNq2k2t1zt5XhCc94U4WBbmC69JmhhRe-O3_51c6hjqUNIcEBK5VnQ/non_transcode/eu-west-3/periscope-replay-direct-prod-eu-west-3-public/audio-space/playlist_16748733499282531558.m3u8?type=replay",
+         "created_at":1697312400536,
+         "scheduled_start":1698004847505,
+         "started_at":1698004806977,
+         "ended_at":"1698010574755",
+         "is_space_available_for_replay":true,
+         "total_replay_watched":92,
+         "total_live_listeners":90
+      },
+      {
+         "space_id":"1YqxoDYWrVMKv",
+         "embed":"https://twitter.com/i/spaces/1YqxoDYWrVMKv",
+         "creator":"Radio Chad",
+         "title":"JEUX VIDEO, BLOCKCHAIN ET TWITTER DE MERDE",
+         "state":"Ended",
+         "media_key":"28_1715463023849246720",
+         "playlist":"https://prod-fastly-eu-west-3.video.pscp.tv/Transcoding/v1/hls/eXBGros1_pCwuUGqj3naP46crSlLAgHADhIBece0PzXGuXdr0PdwypOT80K59UCxsEZXuRjXJC4tTocOjSMBrQ/non_transcode/eu-west-3/periscope-replay-direct-prod-eu-west-3-public/audio-space/playlist_16748906662865588420.m3u8?type=replay",
+         "created_at":1697833231287,
+         "started_at":1697833233210,
+         "ended_at":"1697837404207",
+         "is_space_available_for_replay":true,
+         "total_replay_watched":36,
+         "total_live_listeners":43
+      }
+   ],
+   "cursor":"DAABCgABF9wpS1-__78KAAIXy_S8oVag3wgAAwAAAAIAAA"
 }
 ```
 
