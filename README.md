@@ -64,13 +64,17 @@ curl --request GET \
 
 ## Limitations
 
-- Space Playback: `playlist` is the URL for playing the recorded space. However, a direct playback in browser-based HLS players requires a workaround. While the content can be played locally using software like VLC, you might also use FFmpeg to achieve this. Here is an example to record to an .m4a file using FFmpeg:
+### Space Playback
+
+`playlist` is the URL for playing the recorded space. However, a direct playback in browser-based HLS players requires a workaround. While the content can be played locally using software like VLC, you might also use FFmpeg to achieve this. Here is an example to record to an .m4a file using FFmpeg:
 
 ```bash
 ffmpeg -i https://prod-fastly-eu-central-1.video.pscp.tv/Transcoding/v1/hls/WgDZzH3Zrm7SMLCKzf3LxHWKRAWipI65v8tkJtkzUQ4LowXU9ui9hGQMGPekDp6RoNPfWoPDjZroC4V7VuRlLw/non_transcode/eu-central-1/periscope-replay-direct-prod-eu-central-1-public/audio-space/playlist_16748038725661342054.m3u8\?type\=replay -c copy -bsf:a aac_adtstoasc output.m4a
 ```
 
-- Embedding Spaces: `embed` is the suitable URL for embedding within an iframe. However, to view the content, the user needs to be logged into their Twitter account.
+### Embedding Spaces
+
+`embed` is the suitable URL for embedding within an iframe. However, to view the content, the user needs to be logged into their Twitter account.
 
 ## Development
 
