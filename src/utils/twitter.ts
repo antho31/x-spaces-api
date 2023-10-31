@@ -126,7 +126,7 @@ export async function getUserSpaceIds(
 		const cursors: any[] = instruction?.entries
 			?.filter((v) => v?.content?.entryType === 'TimelineTimelineCursor' && v?.content?.cursorType === 'Bottom')
 			?.map((v) => v?.content?.value);
-		cursor = cursors[0];
+		cursor = cursors?.length ? cursors[0] : undefined;
 	} while (cursor && spaceIds.length < count);
 
 	return { cursor, spaceIds: spaceIds.length > count ? spaceIds.slice(0, count) : spaceIds };
