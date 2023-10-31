@@ -135,21 +135,17 @@ npx wrangler secret put CSRF
 
 ### Testing
 
-Run tests with:
-
-```shell
-npm run test
-```
-
-### Local development server
-
-Start the development server:
+First, you should start the development server:
 
 ```shell
 npm run dev
 ```
 
-Access the API at `http://localhost:8787`
+Then, run tests with:
+
+```shell
+npm run test
+```
 
 ### Deployment
 
