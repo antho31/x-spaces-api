@@ -25,13 +25,14 @@ export type UserSpaceInfosDataResponse = {
 	created_at: number;
 	scheduled_start: number;
 	started_at: number;
-	ended_at: number;
+	ended_at: string;
 	is_space_available_for_replay: boolean;
 	total_replay_watched: number;
 	total_live_listeners;
 };
 
 export type UserSpaceInfosResponse = {
+	count: number;
 	data: UserSpaceInfosDataResponse[];
 	cursor: string | undefined;
 };
@@ -504,6 +505,7 @@ export async function getUserSpaceInfos(
 	);
 
 	return {
+		count: userSpaceInfos.length,
 		data: userSpaceInfos,
 		cursor,
 	};

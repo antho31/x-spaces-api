@@ -56,14 +56,9 @@ app.get('/spaces/:userId', async (c) => {
 			: { count: Number(req.query().count), cursor: req.query().cursor };
 		const { userId } = req.param() as SpacesUserIdParams;
 
-		const { data, cursor }: UserSpaceInfosResponse = await getUserSpaceInfos(userId, env.AUTH_TOKEN, env.CSRF, query.count, query.cursor);
+		const response: UserSpaceInfosResponse = await getUserSpaceInfos(userId, env.AUTH_TOKEN, env.CSRF, query.count, query.cursor);
 
-		return c.json({
-			success: true,
-			count: data?.length,
-			data,
-			cursor,
-		});
+		return c.json(response);
 	} catch (e: any) {
 		c.status(400);
 		return c.json({ error: e.message });
