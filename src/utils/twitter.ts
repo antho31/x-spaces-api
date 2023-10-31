@@ -9,6 +9,11 @@ export type TwitterGuestHeaders = {
 	'x-guest-token': string;
 };
 
+export type SpaceIdsResponse = {
+	spaceIds: string[];
+	cursor: string | undefined;
+};
+
 export const TWITTER_PUBLIC_AUTHORIZATION: string =
 	'Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs=1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA';
 
@@ -88,9 +93,14 @@ export async function getUserTweets(userId: string, authToken: string, csrf: str
 	return await response.json();
 }
 
-export async function getUserSpaceIds(userId: string, authToken: string, csrf: string, count: number): Promise<string[]> {
-	let cursor;
-	let spaceIds = [];
+export async function getUserSpaceIds(
+	userId: string,
+	authToken: string,
+	csrf: string,
+	count: number,
+	cursor: string | undefined,
+): Promise<SpaceIdsResponse> {
+	let spaceIds: string[] = [];
 
 	do {
 		const data = await getUserTweets(userId, authToken, csrf, cursor);
@@ -119,7 +129,7 @@ export async function getUserSpaceIds(userId: string, authToken: string, csrf: s
 		cursor = cursors[0];
 	} while (cursor && spaceIds.length < count);
 
-	return spaceIds.length > count ? spaceIds.slice(0, count) : spaceIds;
+	return { cursor, spaceIds: spaceIds.length > count ? spaceIds.slice(0, count) : spaceIds };
 }
 
 export async function getSpace(spaceId: string, authToken: string, csrf: string) {
@@ -414,8 +424,8 @@ export async function getMedia(mediaKey: string, authToken: string, csrf: string
 	return data;
 }
 
-export async function getUserSpaceInfos(userId: string, authToken: string, csrf: string, count: number) {
-	const spaceIds: string[] = await getUserSpaceIds(userId, authToken, csrf, count);
+export async function getUserSpaceInfos(userId: string, authToken: string, csrf: string, count: number, reqCursor: string | undefined) {
+	const { spaceIds, cursor }: SpaceIdsResponse = await getUserSpaceIds(userId, authToken, csrf, count, reqCursor);
 
 	const userSpaceInfos = await Promise.all(
 		spaceIds.map(async (spaceId) => {
@@ -454,7 +464,6 @@ export async function getUserSpaceInfos(userId: string, authToken: string, csrf:
 				state,
 				media_key,
 				playlist,
-				created: new Date(created_at),
 				created_at,
 				scheduled_start,
 				started_at,
@@ -466,9 +475,8 @@ export async function getUserSpaceInfos(userId: string, authToken: string, csrf:
 		}),
 	);
 
-	return userSpaceInfos.sort((a, b) => {
-		const dateA = new Date(a.created_at);
-		const dateB = new Date(b.created_at);
-		return dateB.getTime() - dateA.getTime();
-	});
+	return {
+		data: userSpaceInfos,
+		cursor,
+	};
 }
